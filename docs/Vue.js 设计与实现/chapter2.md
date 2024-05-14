@@ -10,7 +10,7 @@
     - 以上两种角度是相悖的
 - 因此，Vue.js 区分了**开发环境与生产环境**，这样既保证了开发过程中的开发体验，又保证了实际生产环境中的体积以及性能
     - 看 vue 的 log 日志源码中，基本都区分了环境， 通过_DEV_常量进行区分：
-    ![Alt text](../image/image.png)
+    ![Alt text](../image/image2-1.png)
 
 ## 2.3 框架要做到良好的 Tree-Shaking
 - 背景：2.2 中提出通过区分环境来构建不同产物，从而控制体积，而这些还是不够的，因此引入的 Tree-Shaking 的方案
@@ -37,7 +37,7 @@
         - 使用场景：现在主流浏览器对于原生 ESM 的支持不错，可以使用 script type=“module” 标签直接引入 esm
         - 配置: 在 rollup.js 中，通过 output 中的 format:'esm'来配置表示
         - vue 自身 esm 会有两块：
-            - vue.esm-browser.js: 直接给浏览器 script type="mode" 标签使用的 esm，通过 _DEV_ 来区分不同环境
+            - vue.esm-browser.js: 直接给浏览器 script type="module" 标签使用的 esm，通过 _DEV_ 来区分不同环境
             - vue.esm-bundler.js: 给 rollup.js 或 webpack 等打包工具使用的 esm, 通过 process.env.NODE_ENV 来区分环境，支持用户通过配置决定目标环境
 
     - cjs
@@ -45,4 +45,33 @@
         - 使用场景： 使用在 node 环境而非浏览器环境，通过 const Vue = require('vue') 使用
         - 配置: 在 rollup.config.js 中，通过 output 中的 format:'cjs'来配置表示
 
-        33页了
+
+## 2.5 特性开关
+Vue 中有很多特性开关
+
+### 特性开关的优势
+- 精准的体积控制：用户关闭的特性，tree-shaking掉
+- 为框架设计带来灵活性
+    - 新增特性，不用担心不需要的老用户资源体积变大
+    - 升级后的遗留 API, 不用担心新用户的资源体积变大
+
+### 特性开关的实现
+-  和__DEV__本质一样，采用 rollup.js 的预定义常量插件来实现
+![Alt text](../image/image2-4.png)
+- 举例： __VUE_OPTIONS_API
+    - 作用：让 vue3 中也能兼容 vue2 的选项式 API 方式编码，如果你不需要，可以在插件配置中关闭该特性，从而实现减小体积优化性能的效果
+    - ![Alt text](../image/image2-5.png)
+
+## 2.6 错误处理与健壮性
+错误处理是框架开发过程中非常重要的环节。
+好的框架错误处理机制可以提升应用程序的健壮性，同时降低用户开发时处理错误的心智负担。
+
+- 方式一：让用户自行在自己的每一个函数中 try catch ❌❌❌（冗余，用户心智负担大）
+- 方式二：框架设计者代替用户在每一个导出方法中 try catch ❌❌（框架内代码冗余）
+- 方式三：框架设计者封装统一的错误处理函数 callWithErrorHandling + 注册统一错误处理程序 registerErrorHandler
+    - 这样错误处理能力完全由用户控制，用户既可以选择忽略，也可以进一步操作
+    - Vue 中注册统一错误处理函数：
+        - ![Alt text](../image/image2-6.png)
+
+## 2.7 良好的 Typescript 支持
+- TS 编写代码 和 TS 类型支持友好 是两回事
