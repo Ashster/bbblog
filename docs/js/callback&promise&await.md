@@ -1,8 +1,26 @@
 # 参考资料
 https://zh.javascript.info/callbacks
+https://juejin.cn/post/7038043707265777672
+
+# 进程与线程
+进程是操作系统分配资源的基本单位，一个进程可以包含多个线程，线程是操作系统调度的基本单位。
+比如在浏览器中，一般一个 tab 页就是一个进程，一个进程可以包含多个线程，比如渲染线程、js 引擎线程、事件线程等。
+多个线程共享进程的资源，但是每个线程都有自己的执行上下文，包括代码执行位置、变量、堆栈等。
+多个线程可以同时执行，但是需要操作系统进行调度，操作系统会根据线程的优先级、状态、等待时间等进行调度，以保证每个线程都能公平地使用 CPU 资源。
+（注意，js引擎线程 和 渲染线程 是互斥的，因为渲染线程需要访问 dom 树 和样式表，而 js 引擎线程可能会修改 dom 树 和样式表，所以需要互斥）
+
+# 为什么 js 是单线程的
+js 是单线程的，非阻塞的。为了保证单线程的非阻塞，对于异步耗时任务和同步任务，则需要一套调度机制，这套调度机制就是事件循环。
+因为 js 的主要任务是在浏览器中执行，与用户互动，操作 dom 等，这些任务都是需要与用户交互的，所以需要单线程。如果 js 是多线程的，一个线程去增加 dom，另一个线程去删除 dom，那么 dom 的状态就会变得不可控，不知道该以哪个线程为准。所以 js 从诞生开始就是设计为单线程的。
+HTML5 中提供了 web worker 来实现多线程，但是 web worker 不能访问 dom，所以不能直接操作 dom。所以并不会与 js 的设计初衷冲突，也并没有改变 js 是单线程的本质。
 
 # 异步
-js 是单线程的，为了避免过大的非主要任务长时间占据主线程，js 提供了很多异步函数， 比如 setTimeout、setInterval、Promise、fetch、script 标签的加载等。
+js 是单线程的，所以用异步编程的方式来处理非主要任务，避免过大的非主要任务长时间占据主线程。
+
+js 中对于同步任务会放入执行栈中去执行，执行完毕后出栈。
+而对于异步任务，js会将异步任务挂起后立即返回，继续执行执行栈中的同步任务，避免异步任务阻塞主线程。当异步任务返回结果的时候，将任务添加到任务队列中，等待主线程空闲时执行。这也是为什么说 setTimeout 的 delay 参数并不是精确的，而是最小延迟时间，也就是说，如果当前宏任务队列中没有其他宏任务，那么这个宏任务会立即执行，而不是等到延迟时间到达。但是，如果当前宏任务队列中已经有其他宏任务，那么这个宏任务会等到当前宏任务队列中的其他宏任务执行完毕后，再执行。
+
+为了避免过大的非主要任务长时间占据主线程，js 提供了很多异步函数， 比如 setTimeout、setInterval、Promise、fetch、script 标签的加载等。
 
 这些异步函数在执行时，会立即返回，不会阻塞主线程，而是将任务添加到任务队列中，等待主线程空闲时执行。
 
@@ -52,7 +70,7 @@ Promise 含义如其名，就是承诺，承诺在未来的某个时间点完成
 - state —— 最初是 "pending"，然后在 resolve 被调用时变为 "fulfilled"，或者在 reject 被调用时变为 "rejected"。
 - result —— 最初是 undefined，然后在 resolve(value) 被调用时变为 value，或者在 reject(error) 被调用时变为 error。
 
-Promise 状态一旦改变，就不会再变，也不会再执行状态改变后的代码。
+Promise 状态一旦改变，就不会再变，也不会执行后面继续改变状态的 resolve/reject 方法，但是其他代码还是可以正常执行的，比如 console.log 等，不会直接 return 掉。
 
 ```js
 let promise = new Promise(function(resolve, reject) {
@@ -67,7 +85,7 @@ promise.then((result) => {
 
 ### Promise .then
 Promise 对象的 then 方法可以用来注册一个回调函数，当 Promise 对象的状态变为 fulfilled 时，回调函数会被执行。
-promisr.then 其实是有两个参数的，第一个参数是 fulfilled 状态的回调函数，第二个参数是 rejected 状态的回调函数，我们平时使用的时候一般只传第一个参数，第二个参数不传。而 .catch 方法其实就相当于 .then(null,onRejected)。
+promise.then 其实是有两个参数的，第一个参数是 fulfilled 状态的回调函数，第二个参数是 rejected 状态的回调函数，我们平时使用的时候一般只传第一个参数，第二个参数不传。而 .catch 方法其实就相当于 .then(null,onRejected)。
 
 ```js
 let promise = new Promise(function(resolve, reject) {
@@ -163,3 +181,65 @@ new Promise((resolve, reject) => {
   .catch(err => alert(err));  // 不会执行，因为 try catch 只能捕获同步错误
 
 ```
+
+# Promise.all/Promise.allSettled/Promise.race/Promise.any
+https://zh.javascript.info/promise-api
+## Promise.all
+所有成功才成功，一个失败就失败
+Promise.all 方法接收一个 promise 数组，返回一个新的 promise 对象，当所有 promise 都成功时，返回一个包含所有 promise 结果的数组，如果有一个 promise 失败，则返回第一个失败的 promise 的错误。
+
+```js
+Promise.all([promise1, promise2, promise3]).then(results => {
+    console.log(results);
+}).catch(error => {
+    console.log(error);
+});
+```
+
+## Promise.allSettled
+所有都结束才成功，无论某个成功还是失败
+
+
+## Promise.race
+一个成功就成功，一个失败就失败
+
+## Promise.any
+一个成功就成功，所有失败才失败
+
+# async/await
+https://zh.javascript.info/async-await
+async/await 是 promise 的语法糖，是用一种更舒服的方式来表达 promise。
+- async 声明的函数返回的是一个 promise 对象，因此可以继续使用 then 方法添加回调函数。
+- await 只能在 async 函数中使用，await 实际上会暂停函数的执行，直到 promise 状态变为 settled，然后以 promise 的结果继续执行。这个行为不会耗费任何 CPU 资源，因为 JavaScript 引擎可以同时处理其他任务：执行其他脚本，处理事件等。
+相比于 promise.then，它只是获取 promise 的结果的一个更优雅的语法。并且也更易于读写。
+当然，现在浏览器中也支持顶层的 await，如果使用旧版本浏览器，也想使用顶层 await 的话，可以将 async 函数包裹在一个立即执行函数中。
+
+- 注意：
+无论 await 后面跟的是 promise 还是非 promise，是同步的还是异步的，都会等 await 语句执行完毕后，再把后面的代码放到微任务队列中执行。
+
+## async/await 错误处理
+如果一个 promise 正常 resolve，await promise 返回的就是其结果。但是如果 promise 被 reject，它将 throw 这个 error，就像在这一行有一个 throw 语句那样。
+
+```js
+async function f() {
+    await Promise.reject(new Error("Whoops!"));
+}
+
+f().catch(err => alert(err)); // 显示错误
+```
+
+同时，可以显式使用 try catch 来捕获错误。
+
+```js
+async function f() {
+    try {
+        let response = await fetch('http://no-such-url');
+    } catch(err) {
+        alert(err); // 显示错误
+    }
+}
+```
+
+
+
+
