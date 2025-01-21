@@ -1,3 +1,7 @@
+// leetcode:
+// Promise pool: https://leetcode.cn/problems/promise-pool/solutions/2380417/promise-dui-xiang-chi-by-leetcode-soluti-5v7u/
+// 
+
 // promise retry
 function promiseRetry(fn, count, delay){
     let currentCount = 0;

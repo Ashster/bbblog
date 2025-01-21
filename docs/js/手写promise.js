@@ -1,4 +1,7 @@
 // 手写promise
+// leetcode:
+// https://leetcode.cn/problems/promise-pool/solutions/2380417/promise-dui-xiang-chi-by-leetcode-soluti-5v7u/
+// 
 // https://github.com/yuanyuanbyte/Blog/issues/125
 // 1. Promise 是一个类，有三个状态：pending, fulfilled, rejected。
 // 2. Promise 初始状态为 pending，当调用 resolve 时，状态变为 fulfilled，当调用 reject 时，状态变为 rejected。
@@ -625,3 +628,5 @@ setTimeout(() => {
         console.log('--------------------------------');
     });
 }, 9000);
+
+// 
