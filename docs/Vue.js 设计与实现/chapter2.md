@@ -1,4 +1,4 @@
-# 第 2 章：框架设计的核心要素
+# 第 2 章: 框架设计的核心要素
 ## 2.1 提升用户的开发体验
 - 提供友好的警告信息，帮助用户快速定位问题
 - 提供输出格式自定义配置，输出 log 更加友好（比如 initCustomFormatter 函数用来自定义 ref log 的展示输出格式）
@@ -29,7 +29,7 @@
         - Immediately Invoked Function Expression 立即调用的函数表达式
         - 使用场景：使用 script 标签直接引入 vue 资源并使用时，需要在引入的 js 文件中直接自执行，比如 vue.global.js 以及 vue.global.prod.js
         ![Alt text](../image/image2-2.png)
-        - 配置: 在 rollup.js 中，通过 output 中的 format:'iife'来配置表示
+        - 配置: 在 rollup.js 中，通过 output 中的 format:'iife'来配置表示：      
         ![Alt text](../image/image2-3.png)
     
     - esm
