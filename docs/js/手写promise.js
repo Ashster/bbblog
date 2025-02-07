@@ -5,7 +5,7 @@
 // https://github.com/yuanyuanbyte/Blog/issues/125
 // 1. Promise 是一个类，有三个状态：pending, fulfilled, rejected。
 // 2. Promise 初始状态为 pending，当调用 resolve 时，状态变为 fulfilled，当调用 reject 时，状态变为 rejected。
-// 3. Promise 的状态一旦改变，就不会再改变。后续再屌用 resolve / reject 也不会改变状态。
+// 3. Promise 的状态一旦改变，就不会再改变。后续调用 resolve / reject 也不会改变状态。
 // 4. 直接打印 Promise 对象，会有以下情况：
     // Promise { <pending> }
         // [[Prototype]]: Promise
