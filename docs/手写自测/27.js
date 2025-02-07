@@ -16,6 +16,9 @@ class MyPromise {
         if (this.PromiseState === MyPromise.PENDING) {
             this.PromiseState = MyPromise.FULFILLED;
             this.PromiseResult = value;
+            this.onResolvedCallbackList.forEach((callback) => {
+                callback(this.PromiseResult);
+            })
         }
     }
 
@@ -24,50 +27,53 @@ class MyPromise {
             this.PromiseState = MyPromise.REJECTED;
             this.PromiseResult = reason;
         }
+        this.onRejectedCallbackList.forEach((callback) => {
+            callback(this.PromiseResult);
+        })
     }
 
-    then(onResolvedCallback, onRejectedCallback) {
-        if (this.PromiseState === MyPromise.FULFILLED) {
-            let newFunc = () => {
+    then(onResolved, onRejected) {
+        const promise = new MyPromise((resolve, reject) => {
+            if (this.PromiseState === MyPromise.FULFILLED) {
                 setTimeout(() => {
-                    onResolvedCallback(this.PromiseResult);
-                })
-            };
-            newFunc();
-        } else if (this.PromiseState === MyPromise.REJECTED) {
-            let newFunc = () => {
+                    let value = onResolved(this.PromiseResult);
+                    resolve(value);
+                });
+            } else if (this.PromiseState === MyPromise.REJECTED) {
                 setTimeout(() => {
-                    onRejectedCallback(this.PromiseResult);
+                    let reason = onRejected(this.PromiseResult);
+                    reject(reason);
+                });
+            } else {
+                this.onResolvedCallbackList.push(() => {
+                    setTimeout(() => {
+                        onResolved(this.PromiseResult);
+                    })
+                });
+                this.onRejectedCallbackList.push(() => {
+                    setTimeout(() => {
+                        onRejected(this.PromiseResult);
+                    })
                 })
-            };
-            newFunc();
-        } else {
-            this.onResolvedCallbackList.push(() => {
-                setTimeout(() => {
-                    onResolvedCallback(this.PromiseResult);
-                })
-            });
-            this.onRejectedCallbackList.push(() => {
-                setTimeout(() => {
-                    onRejectedCallback(this.PromiseResult);
-                })
-            })
-        }
+            }
+        })
     }
 }
 
 
 const test = new MyPromise((resolve, reject) => {
     // 1. test 同步调用
-    resolve(1);
+    // resolve(1);
     // reject('error reason1')
     // 2. test 异步调用
-    // setTimeout(() => {
-    //     resolve(2);
-    //     console.log(111);
-    // }, 0);
+    setTimeout(() => {
+        resolve(2);
+        console.log(111);
+    }, 0);
 }).then((value) => {
     console.log(111, value);
-});
+}).then((value) => {
+    console.log(222, value)
+})
 
 console.log(test);
