@@ -100,3 +100,43 @@ console.log(LRUTest.get(1)); // 返回 1
 LRUTest.put(3, 3);
 // 之后顺序应该为 head -> 3 -> 1 -> tail
 console.log(LRUTest.get(2)); // 返回 -1, 未找到
+
+
+function curry(fn) {
+    let limit = fn.length;
+    return function curried(...args) {
+        if (args.length >= limit) {
+            return fn(...args);
+        } else {
+            return function (...args2) {
+                return curried(...args, ...args2);
+            }
+        }
+    }
+}
+
+function test(a, b, c, d, e, f) {
+    return a + b + c + d + e + f;
+}
+
+console.log(curry(test)(1)(1)(1, 1, 1, 1));
+
+
+function flatten(array) {
+    return array.reduce((acc, cur) => {
+        return acc.concat(Array.isArray(cur) ? flatten(cur) : cur);
+    }, [])
+}
+
+console.log(flatten([1, [2, [3, [4, [5]]]]]))
+
+
+// flat map 接收一个 function
+function flattenMap(array, fn) {
+    console.log(array, array.map(fn));
+    return array.map(fn).reduce((acc, cur) => {
+        return acc.concat(cur);
+    }, []);
+}
+
+console.log(flattenMap([1, 2, 3, 4, 5], (num) => [num, num * 2]))
