@@ -1064,7 +1064,7 @@ console.log(person1.age);  // 输出 25
 核心：参数长度还不够时，携带上递归上一次的参数，继续递归。
 
 ```javascript
-rvar curry = function(fn) {
+var curry = function(fn) {
   return function curried(...args) {
     if (args.length >= fn.length) {
       return fn(...args);

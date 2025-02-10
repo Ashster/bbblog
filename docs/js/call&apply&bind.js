@@ -66,6 +66,7 @@ Function.prototype.myApply2 = function (ctx, args) {
     }
     ctx = ctx || window;
     const fnSymbol = Symbol();
+    console.log(this);
     ctx[fnSymbol] = this;
     let result;
     if (Array.isArray(args)) {
