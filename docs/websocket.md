@@ -213,7 +213,8 @@ web worker 是用来解决 js 单线程可能造成的性能问题，在 js 主�
     // 这个定时器会 1s 会调一次到主线程
     ```
 
-### shared worker 
+### shared worker
+
 - 前面提到 web worker 是独立的，通过深度拷贝或者转移所有权来传递，资料本身都不会被其他线程共享。
 - 但是 shared worker 是共享的，可以被多个页面共享
 - 通过 MessagePort 来进行通信与共享
@@ -231,3 +232,70 @@ worker.port.onmessage = function(event) {
 worker.port.postMessage('Hello, Shared Worker!');
 ```
 
+### websocket 握手升级
+
+websocket 的握手升级是基于 http 的，所以需要先建立 http 连接，然后通过 http 的 upgrade 头来升级为 websocket 连接。
+
+- 升级过程
+客户端发送一个 HTTP 请求，包含以下特殊的头部：
+
+```js
+GET /chat HTTP/1.1
+Host: server.example.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+Sec-WebSocket-Version: 13
+```
+
+服务器如果支持 WebSocket，会返回一个 101 状态码的响应：
+
+```js
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+```
+
+主要区别
+
+- 客户端的请求头中包含 Upgrade: websocket 和 Connection: Upgrade，表示客户端希望升级到 WebSocket 协议。
+- 服务器返回的响应头中包含 Upgrade: websocket 和 Connection: Upgrade，表示服务器已经成功升级到 WebSocket 协议。
+- 服务器返回的响应头中包含 Sec-WebSocket-Accept，表示服务器已经成功升级到 WebSocket 协议。
+- 握手成功后，客户端和服务器之间的通信就变成了 WebSocket 协议，可以进行双向数据传输。
+
+
+websocket vs http:
+- websocket 是全双工通信的，而 http 是半双工通信的
+- http 是无状态的请求响应模式，每次通信都需要客户端发起
+- websocket 中采用帧来传输数据，而 http 中采用流来传输数据
+
+### SSE
+https://www.ruanyifeng.com/blog/2017/05/server-sent_events.html
+SSE 是 Server-Sent Events 的缩写，是一种单向的通信协议，只能从服务器向客户端发送数据，不能从客户端向服务器发送数据。
+也就是专门的服务端的推送技术。
+他只能单向通信，不能和 websocket 一样双向通信。
+
+- SSE 使用 HTTP 协议，现有的服务器软件都支持。WebSocket 是一个独立协议。
+- SSE 属于轻量级，使用简单；WebSocket 协议相对复杂。
+- SSE 默认支持断线重连，WebSocket 需要自己实现。
+- SSE 一般只用来传送文本，二进制数据需要编码后传送，WebSocket 默认支持传送二进制数据。
+- SSE 支持自定义发送的消息类型。
+
+SSE 本质上就是 HTTP 协议，不需要像 websocket 一样进行协议升级，因为他本来就是 http 长连接。
+
+服务端必须配置协议头：
+```js
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+```
+
+客户端使用 EventSource 对象来接收 SSE 数据：
+```js
+const eventSource = new EventSource('http://localhost:8080/sse');
+
+eventSource.onmessage = function(event) {
+    console.log('Received message:', event.data);
+}
+```
