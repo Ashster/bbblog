@@ -96,7 +96,7 @@ Function.prototype.myBind2 = function (ctx, ...args) {
         throw new TypeError('Error');
     }
 
-    const _this = this;
+    const _this = this;// 用 _this 来表示 fn 本身
     return function F(...newArgs) {
         if (this instanceof F) {
             return new _this(...args, ...newArgs);

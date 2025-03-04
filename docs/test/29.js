@@ -318,7 +318,10 @@ console.log(parseQuery("https://juejin.cn/post/7411532842478321679?from=search-s
 // 手写 deepclone
 function deepClone(obj){
     if(typeof obj !== 'object' || obj === null) return obj;
-    let result = Array.isArray(obj) ? [] : {};
+    // let result = Array.isArray(obj) ? [] : {};
+    if(Array.isArray(obj)){
+        return obj.map(item=>deepClone(item));
+    }
     for(let key in obj){
         if(obj.hasOwnProperty(key)){
             result[key] = deepClone(obj[key]);
